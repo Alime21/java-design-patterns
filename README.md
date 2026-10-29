@@ -54,3 +54,33 @@ Bir YouTube kanalı ya da e-ticaretteki stok bildirim sistemini ele alalım. Kan
 3. **Observer Interface (`Observer`):** Bildirimleri yakalamak için tanımlanan ortak dinleyici arayüzü (`update(title)`).
 4. **Concrete Observer (`EmailSubscriber`, `MobileAppSubscriber`):** Haberi aldığında kendi bildirim yöntemini (mail, push vb.) çalıştıran somut sınıflar.
 ---
+
+## 3. Decorator Pattern (Dekoratör Deseni)
+
+> **Kategori:** Yapısal (Structural)  
+> **Temel Amaç:** Mevcut nesnelerin kodunu değiştirmeden veya kalıtım (inheritance) yoluyla sınıf patlamasına yol açmadan, çalışma anında (runtime) nesnelere dinamik olarak yeni sorumluluklar ve davranışlar eklemek.
+
+### 📌 Senaryo & Problem
+Bir kahve dükkanı sipariş sistemi (Starbucks modeli) düşünelim. Müşteri temel bir kahve (Espresso, Filtre Kahve) seçtikten sonra üzerine çeşitli ek malzemeler ekletmek isteyebilir:
+* Süt
+* Karamel Şurubu
+* Çikolata Sosu (Mocha)
+* Fındık Şurubu
+
+#### ❌ Kötü Tasarım (Anti-pattern - Sınıf Patlaması / Class Explosion)
+Her varyasyon için kalıtım (`extends`) kullanarak ayrı bir alt sınıf türetmeye çalışmak:
+* `EspressoWithMilk`
+* `EspressoWithMilkAndCaramel`
+* `FilterCoffeeWithMochaAndMilk`
+* Malzeme ve kahve çeşitleri arttıkça onlarca/yüzlerce kombinasyonel sınıf oluşur; kod yönetilemez ve katı hale gelir.
+
+#### ✅ Decorator Deseni Çözümü (Composition over Inheritance)
+Temel bileşen (`Espresso`) bir çekirdek nesne olarak kalır. Ek malzemeler ise bu nesneyi bir **soğan kabuğu veya matruşka bebek gibi katman katman sarmalayan (wrap eden)** dekoratörlerdir. 
+
+Dekoratör sınıfı (`BeverageDecorator`), sarmaladığı nesneyle **aynı arayüzü (`Beverage`) uygular (implements)** ve içinde bir `Beverage` referansı barındırır. Bu sayede sarmalanmış nesne de dışarıdan hâlâ bir kahve gibi davranır ve istenen sayıda dekoratör ardı ardına zincirlenebilir.
+
+### 🏗️ Sınıf Rolleri
+1. **Component Interface (`Beverage`):** Hem çekirdek kahvelerin hem de dekoratörlerin paylaştığı ortak sözleşme (`getDescription()`, `getCost()`).
+2. **Concrete Component (`Espresso`, `FilterCoffee`):** Üzerine ek özellikler eklenebilen temel, somut sınıflar.
+3. **Decorator (`BeverageDecorator`):** `Component` arayüzünü uygulayan ve bünyesinde sarmalanacak bir `Component` referansı barındıran soyut köprü sınıf.
+4. **Concrete Decorator (`MilkDecorator`, `CaramelDecorator`):** Çekirdek nesneye çalışma anında ek maliyet ve yeni açıklamalar kazandıran somut sarmalayıcı sınıflar.
