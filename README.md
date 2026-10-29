@@ -24,9 +24,10 @@ Bir e-ticaret ödeme sistemi düşünelim. Sepetteki ürünler onaylandığında
 Değişen davranış (ödeme yapma algoritması) `PaymentStrategy` isimli bir interface arkasına gizlenir. `ShoppingCart` (Context) sınıfı somut sınıflara değil, sadece bu arayüze bağımlı olur. Kullanıcı ödeme yöntemini çalışma anında `setPaymentStrategy(...)` ile değiştirir.
 
 ### 🏗️ Sınıf Rolleri
-* **Strategy Interface (`PaymentStrategy`):** Algoritmaların uyması gereken ortak sözleşme (`pay(amount)`).
-* **Concrete Strategies (`CreditCardPayment`, `PayPalPayment`, `CryptoPayment`):** Kendi verisini tutup davranışı somutlaştıran sınıflar.
-* **Context (`ShoppingCart`):** Strateji nesnesine referans tutan ve ödemeyi bu arayüz üzerinden tetikleyen istemci katmanı.
+1. **Strategy (`PaymentStrategy`):** Algoritmaların uyması gereken ortak arayüz sözleşmesi (`pay(amount)`).
+2. **Concrete Strategy (`CreditCardPayment`, `PayPalPayment`, `CryptoPayment`):** Kendi verisini tutup algoritmayı somutlaştıran sınıflar.
+3. **Context (`ShoppingCart`):** Seçilen stratejiyi bünyesinde barındıran ve ödeme işini bu stratejiye delege eden sınıf.
+4. **Client (`Main`):** Somut stratejiyi seçip Context'e enjekte eden ve akışı başlatan istemci.
 
 ---
 
@@ -48,8 +49,8 @@ Bir YouTube kanalı ya da e-ticaretteki stok bildirim sistemini ele alalım. Kan
 * **Concrete Observers (`EmailSubscriber`, `MobileAppSubscriber`):** Mesaj geldiğinde kendi işini (mail atma, push bildirim basma) yapan sınıflardır. Yayıncı, bildirimin nasıl iletildiğiyle ilgilenmez.
 
 ### 🏗️ Sınıf Rolleri
-* **Subject (`Subject` / `YoutubeChannel`):** Aboneleri kaydeder (`register`), siler (`remove`) ve haberi duyurur (`notify`).
-* **Observer (`Observer`):** Haberi dinleyenlerin ortak arayüzü.
-* **Concrete Observers (`EmailSubscriber`, `MobileAppSubscriber`):** Haberi alıp tüketiciye ileten somut sınıflar.
-
+1. **Subject Interface (`Subject`):** Abone kaydı, silme ve bildirim sözleşmesi.
+2. **Concrete Subject (`YoutubeChannel`):** Takip edilen durumu saklayan ve değişim anında listedeki tüm aboneleri haberdar eden yayıncı sınıf.
+3. **Observer Interface (`Observer`):** Bildirimleri yakalamak için tanımlanan ortak dinleyici arayüzü (`update(title)`).
+4. **Concrete Observer (`EmailSubscriber`, `MobileAppSubscriber`):** Haberi aldığında kendi bildirim yöntemini (mail, push vb.) çalıştıran somut sınıflar.
 ---
