@@ -84,3 +84,27 @@ Dekoratör sınıfı (`BeverageDecorator`), sarmaladığı nesneyle **aynı aray
 2. **Concrete Component (`Espresso`, `FilterCoffee`):** Üzerine ek özellikler eklenebilen temel, somut sınıflar.
 3. **Decorator (`BeverageDecorator`):** `Component` arayüzünü uygulayan ve bünyesinde sarmalanacak bir `Component` referansı barındıran soyut köprü sınıf.
 4. **Concrete Decorator (`MilkDecorator`, `CaramelDecorator`):** Çekirdek nesneye çalışma anında ek maliyet ve yeni açıklamalar kazandıran somut sarmalayıcı sınıflar.
+
+---
+
+## 4. Factory Pattern (Fabrika Deseni)
+
+> **Kategori:** Yaratımsal (Creational)  
+> **Temel Amaç:** Nesne oluşturma mantığını istemci kodundan ayırarak, hangi somut sınıfın örnekleneceğine karar verme işini tek bir noktada (fabrikada) toplamak.
+
+### 📌 Senaryo & Problem
+Farklı taşıma yöntemlerine (Kamyon, Gemi, Uçak) sahip bir kargo lojistik platformu düşünelim.
+
+#### ❌ Kötü Tasarım (Anti-pattern)
+İstemcinin (`Main`, `OrderService` vb.) nesneleri doğrudan kodun içine dağılmış `new Truck()`, `new Ship()` çağrılarıyla üretmesi:
+* **Tight Coupling (Sıkı Bağımlılık):** İstemci, tüm somut sınıfların constructor detaylarına bağımlı hale gelir.
+* **Değişim Zorluğu:** Yeni bir taşıma aracı (`Drone`) eklendiğinde projenin farklı yerlerindeki tüm `if-else` bloklarını tek tek arayıp değiştirmek gerekir.
+
+#### ✅ Factory Deseni Çözümü
+Nesne üretimi `TransportFactory` sınıfına delege edilir. İstemci yalnızca genel ürün arayüzünü (`Transport`) bilir ve fabrikadan parametre ile nesne talep eder. Yeni bir araç eklendiğinde sadece fabrika sınıfı güncellenir; istemci koduna dokunulmaz.
+
+### 🏗️ Sınıf Rolleri
+1. **Product Interface (`Transport`):** Üretilecek tüm nesnelerin ortak davranışını tanımlayan sözleşme (`deliver()`).
+2. **Concrete Products (`Truck`, `Ship`, `Plane`):** Arayüzü uygulayan gerçek nesneler.
+3. **Creator / Factory (`TransportFactory`):** İstemciden gelen parametreye göre uygun somut nesneyi üretip `Product` arayüzü tipinde döndüren sınıf.
+4. **Client (`Main`):** Fabrikayı çağırıp dönen nesneyi soyut arayüzü üzerinden kullanan istemci.
