@@ -161,3 +161,52 @@ Her pizza sınıfının constructor'ına onlarca parametre geçmek veya pizzanı
 | **Temel Mekanizma** | **Kalıtım (Inheritance):** Nesne üretim kararı alt sınıfların ezdiği (`override`) metoda bırakılır. | **Bileşim (Composition):** Nesne üretiminden sorumlu fabrika nesnesi başka bir nesneye enjekte edilir. |
 | **Üretilen Nesne** | Tek bir ürün (`Pizza`). | Birbiriyle ilişkili **ürün ailesi** (`Dough`, `Sauce`, `Cheese`). |
 | **Genişleme Odağı** | Yeni ürün çeşitleri türetmeye odaklanır. | Yeni ürün aileleri (ör. Chicago malzeme paketi) eklemeye odaklanır. |
+
+---
+
+## 5. Singleton Pattern (Tek Nesne Deseni)
+
+> **Kategori:** Yaratımsal (Creational)  
+> **Temel Amaç:** Bir sınıfın JVM (Java Virtual Machine) yaşam döngüsü boyunca yalnızca tek bir örneğinin (instance) var olmasını garanti altına almak ve bu nesneye küresel bir erişim noktası sağlamak.
+
+### 📌 Senaryo & Problem
+Veritabanı bağlantı havuzları (`DatabaseConnection`), loglama mekanizmaları (`Logger`) veya donanım sürücüleri gibi pahalı kaynakların yönetimi.
+
+#### ❌ Kötü Tasarım (Anti-pattern)
+İhtiyaç duyulan her sınıfta `new DatabaseConnection()` çağrısı yapmak:
+* Gereksiz bellek kullanımı ve veritabanı soket sınırlarının tükenmesi.
+* Paylaşılan kaynaklar üzerinde eşzamanlılık (concurrency) ve durum tutarsızlığı problemleri.
+
+#### ✅ Singleton Çözümü
+Constructor `private` yapılarak sınıfın dışarıdan örnekelenmesi engellenir. Sınıf kendi içinde `static` bir referans tutar ve `getInstance()` metodu aracılığıyla herkese bellekteki aynı tek örneği döner.
+
+### 🏗️ Temel Bileşenler
+1. **Private Constructor:** `new` anahtar kelimesiyle dışarıdan nesne türetilmesini engeller.
+2. **Static Instance Variable:** Üretilen tek nesneyi bellekte (metaspace/static alanda) tutar.
+3. **Global Access Method (`getInstance()`):** Nesneye ihtiyaç duyulduğunda onu temin eden veya ilk seferinde üreten statik erişim metodu.
+
+---
+
+## 6. Command Pattern (Komut Deseni)
+
+> **Kategori:** Davranışsal (Behavioral)  
+> **Temel Amaç:** Bir isteği bir nesne olarak kapsüllemek (encapsulate); böylece istemcileri farklı isteklerle parametrelendirmek, istekleri sıraya dizmek/kaydetmek ve geri alınabilir (undo) işlemler sunmak.
+
+### 📌 Senaryo & Problem
+Farklı cihazları (Işık, Garaj Kapısı, Müzik Sistemi) tek bir merkezden kontrol eden akıllı ev kumandası.
+
+#### ❌ Kötü Tasarım (Anti-pattern)
+Kumandanın her cihaz sınıfını (`Light`, `GarageDoor`) doğrudan bilmesi ve buton metotlarının içine donanımlara özel metot çağrılarını gömmesi:
+* Kumanda ile cihazlar arasında yüksek bağlılık (Tight Coupling) oluşur.
+* Yeni bir cihaz eklendiğinde kumandanın kaynak kodunu değiştirmek gerekir (OCP ihlali).
+* İşlemleri geri almak (Undo) veya komut geçmişi tutmak imkansız hale gelir.
+
+#### ✅ Command Çözümü
+İş istekleri ortak bir arayüzü (`Command`) uygulayan nesneler haline getirilir. Kumanda (Invoker) yalnızca `execute()` ve `undo()` metotlarını bilir; alıcının (Receiver) kim olduğunu veya işin nasıl yapıldığını bilmez.
+
+### 🏗️ Sınıf Rolleri
+1. **Command Interface (`Command`):** Eylemin çalıştırılması (`execute`) ve geri alınması (`undo`) için ortak sözleşme.
+2. **Concrete Command (`LightOnCommand`, `GarageDoorOpenCommand`):** Alıcı nesneyi içinde tutan ve komut tetiklendiğinde alıcının ilgili metodunu çağıran sınıf.
+3. **Receiver (`Light`, `GarageDoor`):** İsteğin yerine getirilmesi için gerekli asıl iş mantığını barındıran hedef cihaz.
+4. **Invoker (`RemoteControl`):** Komut nesnelerini üzerinde barındıran ve kullanıcı etkileşimiyle onları tetikleyen çağırıcı.
+5. **Client (`Main`):** Alıcıları ve komutları üretip Invoker üzerine yerleştiren istemci.
