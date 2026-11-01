@@ -1,4 +1,4 @@
-package PatternFactory;
+package PatternSimpleFactory;
 
 public class Plane implements Transport {
     @Override 

@@ -87,24 +87,77 @@ Dekoratör sınıfı (`BeverageDecorator`), sarmaladığı nesneyle **aynı aray
 
 ---
 
-## 4. Factory Pattern (Fabrika Deseni)
+## 4. Factory Patterns (Fabrika Desenleri)
 
 > **Kategori:** Yaratımsal (Creational)  
-> **Temel Amaç:** Nesne oluşturma mantığını istemci kodundan ayırarak, hangi somut sınıfın örnekleneceğine karar verme işini tek bir noktada (fabrikada) toplamak.
+> **Temel Felsefe:** Doğrudan `new` anahtar kelimesiyle nesne oluşturmak, istemciyi somut sınıflara sıkı sıkıya bağlar (Tight Coupling). Değişen nesne yaratım süreçlerini değişmeyen iş kurallarından soyutlamak gerekir.
 
-### 📌 Senaryo & Problem
-Farklı taşıma yöntemlerine (Kamyon, Gemi, Uçak) sahip bir kargo lojistik platformu düşünelim.
+Nesne yaratımının yönetimi projelerin ölçeğine ve gereksinimlerine göre 3 aşamalı bir mimari evrimle ele alınır:
+
+---
+
+### A. Simple Factory (Basit Fabrika)
+* **Amaç:** Kod içine dağılmış `new` çağrılarını tek bir merkezi sınıfa taşımak.
+* **Mekanizma:** `switch-case` veya `if-else` blokları içeren statik bir yardımcı metot (`TransportFactory.createTransport(type)` veya `SimplePizzaFactory.createPizza(type)`) aracılığıyla istemciye arayüz tipinde somut ürün döner.
+* **Durum:** Resmi bir Gang of Four (GoF) deseni değildir; kod kalitesini artıran yaygın bir programlama alışkanlığıdır (idiom).
+
+---
+
+### B. Factory Method Pattern (Fabrika Metodu Deseni - GoF)
+
+> **GoF Tanımı:** *"Nesne oluşturmak için bir arayüz tanımlar, ancak hangi sınıfın örnekleneceğine alt sınıfların karar vermesine izin verir. Factory Method, bir sınıfın örneklemeyi alt sınıflara ertelemesini sağlar."*
+
+#### 📌 Senaryo & Problem
+Pizza dükkanının New York (`NYPizzaStore`) ve Chicago (`ChicagoPizzaStore`) gibi farklı bölgelerde şubeler açması.
+* Her iki şubede de sipariş karşılama, fırınlama, dilimleme ve kutulama akışı aynıdır.
+* Ancak New York şubesi ince hamurlu pizza (`NYStyleCheesePizza`), Chicago şubesi ise kalın hamurlu pizza (`ChicagoStyleCheesePizza`) üretmek zorundadır.
 
 #### ❌ Kötü Tasarım (Anti-pattern)
-İstemcinin (`Main`, `OrderService` vb.) nesneleri doğrudan kodun içine dağılmış `new Truck()`, `new Ship()` çağrılarıyla üretmesi:
-* **Tight Coupling (Sıkı Bağımlılık):** İstemci, tüm somut sınıfların constructor detaylarına bağımlı hale gelir.
-* **Değişim Zorluğu:** Yeni bir taşıma aracı (`Drone`) eklendiğinde projenin farklı yerlerindeki tüm `if-else` bloklarını tek tek arayıp değiştirmek gerekir.
+`orderPizza` metodunun içinde tüm bölgesel varyasyonları devasa `if-else` bloklarıyla kontrol etmeye çalışmak veya her yeni şube için tüm sipariş akışını baştan yazmak.
 
-#### ✅ Factory Deseni Çözümü
-Nesne üretimi `TransportFactory` sınıfına delege edilir. İstemci yalnızca genel ürün arayüzünü (`Transport`) bilir ve fabrikadan parametre ile nesne talep eder. Yeni bir araç eklendiğinde sadece fabrika sınıfı güncellenir; istemci koduna dokunulmaz.
+#### ✅ Factory Method Çözümü (Kalıtım / Inheritance)
+* Üst sınıf (`PizzaStore`), sipariş sürecini (`orderPizza`) sabit tutar; fakat pizzayı oluşturan metodu soyut tanımlar: `abstract Pizza createPizza(String item);`.
+* Hangi somut pizzanın `new` edileceği kararı, bu metodu ezen alt sınıflara (`NYPizzaStore`, `ChicagoPizzaStore`) devredilir.
+* **Dependency Inversion Principle (DIP):** Hem üst seviye dükkan sınıfı hem de alt sınıflar somut implementasyonlara değil, soyut `Pizza` sınıfına bağımlı hale gelir.
 
-### 🏗️ Sınıf Rolleri
-1. **Product Interface (`Transport`):** Üretilecek tüm nesnelerin ortak davranışını tanımlayan sözleşme (`deliver()`).
-2. **Concrete Products (`Truck`, `Ship`, `Plane`):** Arayüzü uygulayan gerçek nesneler.
-3. **Creator / Factory (`TransportFactory`):** İstemciden gelen parametreye göre uygun somut nesneyi üretip `Product` arayüzü tipinde döndüren sınıf.
-4. **Client (`Main`):** Fabrikayı çağırıp dönen nesneyi soyut arayüzü üzerinden kullanan istemci.
+#### 🏗️ Sınıf Rolleri
+1. **Product (`Pizza`):** Fabrika metodunun ürettiği nesnelerin ortak soyut sınıfı/arayüzü.
+2. **Concrete Product (`NYStyleCheesePizza`, `ChicagoStyleCheesePizza`):** Arayüzü uygulayan gerçek nesneler.
+3. **Creator (`PizzaStore`):** Sipariş akışını yöneten ve soyut fabrika metodunu (`createPizza`) barındıran temel sınıf.
+4. **Concrete Creator (`NYPizzaStore`, `ChicagoPizzaStore`):** Fabrika metodunu ezerek ilgili somut ürünü üreten alt sınıflar.
+
+---
+
+### C. Abstract Factory Pattern (Soyut Fabrika Deseni - GoF)
+
+> **GoF Tanımı:** *"Birbiriyle ilişkili veya bağımlı nesne ailelerini, somut sınıflarını belirtmeden oluşturmak için bir arayüz sağlar."*
+
+#### 📌 Senaryo & Problem
+Farklı şubelerin pizzalarında kullandığı malzemelerin (Hamur, Sos, Peynir) standart ve birbiriyle uyumlu olmasının sağlanması. 
+* New York: İnce hamur (`ThinCrustDough`), Marinara sos (`MarinaraSauce`), Reggiano peynir (`ReggianoCheese`).
+* Malzemelerin tek tek elle seçilmesi kombinasyon hatalarına ve kalite uyumsuzluklarına yol açar.
+
+#### ❌ Kötü Tasarım (Anti-pattern)
+Her pizza sınıfının constructor'ına onlarca parametre geçmek veya pizzanın kendi içinde rastgele malzemeleri doğrudan `new` etmesi.
+
+#### ✅ Abstract Factory Çözümü (Bileşim / Composition)
+* Birbiriyle uyumlu ürün grubunu tek çatı altında toplayan bir fabrika arayüzü tanımlanır (`PizzaIngredientFactory`). Bu arayüz birden fazla yaratım metodu barındırır: `createDough()`, `createSauce()`, `createCheese()`.
+* Bölgesel malzeme aileleri somut fabrikalarda (`NYPizzaIngredientFactory`) paketlenir.
+* `CheesePizza` sınıfı artık malzemeyi doğrudan seçmez; içine enjekte edilen malzeme fabrikasına (`PizzaIngredientFactory`) sorarak malzemelerini temin eder (`dough = ingredientFactory.createDough()`).
+
+#### 🏗️ Sınıf Rolleri
+1. **Abstract Factory (`PizzaIngredientFactory`):** Birbiriyle ilişkili nesneler ailesini üretmek için tanımlanan fabrika arayüzü.
+2. **Concrete Factory (`NYPizzaIngredientFactory`):** Belirli bir bölgeye/temaya ait somut malzeme ailesini üreten fabrika sınıfı.
+3. **Abstract Product (`Dough`, `Sauce`, `Cheese`):** Ürün ailesini oluşturan bileşenlerin temel arayüzleri.
+4. **Concrete Product (`ThinCrustDough`, `MarinaraSauce`, `ReggianoCheese`):** Belirli aileye ait somut bileşen sınıfları.
+5. **Client (`CheesePizza` / `PizzaStore`):** Yalnızca `Abstract Factory` ve `Abstract Product` arayüzlerini kullanarak çalışan tüketici.
+
+---
+
+### ⚖️ Factory Method vs. Abstract Factory Karşılaştırması
+
+| Kriter | Factory Method | Abstract Factory |
+| :--- | :--- | :--- |
+| **Temel Mekanizma** | **Kalıtım (Inheritance):** Nesne üretim kararı alt sınıfların ezdiği (`override`) metoda bırakılır. | **Bileşim (Composition):** Nesne üretiminden sorumlu fabrika nesnesi başka bir nesneye enjekte edilir. |
+| **Üretilen Nesne** | Tek bir ürün (`Pizza`). | Birbiriyle ilişkili **ürün ailesi** (`Dough`, `Sauce`, `Cheese`). |
+| **Genişleme Odağı** | Yeni ürün çeşitleri türetmeye odaklanır. | Yeni ürün aileleri (ör. Chicago malzeme paketi) eklemeye odaklanır. |

@@ -1,4 +1,4 @@
-package PatternFactory;
+package PatternSimpleFactory;
 
 public interface Transport {
     void deliver();

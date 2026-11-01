@@ -1,4 +1,4 @@
-package PatternFactory;
+package PatternSimpleFactory;
 
 public class Ship implements Transport {
     @Override 

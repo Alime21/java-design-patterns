@@ -1,4 +1,4 @@
-package PatternFactory;
+package PatternSimpleFactory;
 
 public class TransportFactory {
     public static Transport createTransport(String type) {
