@@ -210,3 +210,92 @@ Kumandanın her cihaz sınıfını (`Light`, `GarageDoor`) doğrudan bilmesi ve 
 3. **Receiver (`Light`, `GarageDoor`):** İsteğin yerine getirilmesi için gerekli asıl iş mantığını barındıran hedef cihaz.
 4. **Invoker (`RemoteControl`):** Komut nesnelerini üzerinde barındıran ve kullanıcı etkileşimiyle onları tetikleyen çağırıcı.
 5. **Client (`Main`):** Alıcıları ve komutları üretip Invoker üzerine yerleştiren istemci.
+
+---
+
+---
+
+## 📌 Tasarım Desenlerinde Kullanılan Temel OOP & Yazılım İlkeleri
+
+Bu projede uygulanan tüm desenler, nesne yönelimli programlamanın (OOP) ve SOLID ilkelerinin somut birer yansımasıdır. İleride dönüp bakıldığında kod parçalarıyla birlikte hatırlanması gereken temel kavramlar:
+
+---
+
+### 1. Coupling (Bağlılık) & Cohesion (Uyum)
+
+* **Tight Coupling (Sıkı Bağımlılık - Kaçındığımız):** 
+  * *Tanım:* Bir sınıfın diğer somut sınıfların iç detaylarına, constructor parametrelerine doğrudan bağımlı olması.
+  * *Kötü Örnek:* `RemoteControl` sınıfının içine doğrudan `Light livingRoomLight;` yazması veya `PizzaStore` içinde `new NYStyleCheesePizza()` çağrısı yapılması.
+* **Loose Coupling (Gevşek Bağlılık - Uyguladığımız):** 
+  * *Tanım:* Sınıfların birbirlerini somut halleriyle değil, yalnızca arayüzler (interface) üzerinden tanıması.
+  * *Kod Eşleşmesi:* 
+    * `YoutubeChannel` sınıfının `EmailSubscriber` sınıfını bilmeyip sadece `List<Observer>` tutması.
+    * `RemoteControl` sınıfının `Light` veya `GarageDoor` bilmeyip sadece `Command[]` dizisi tutması.
+* **High Cohesion (Yüksek Uyum):** 
+  * *Tanım:* Bir sınıfın yalnızca tek bir amaca odaklanması, alakasız işleri üstlenmemesi.
+  * *Kod Eşleşmesi:* `LightOnCommand` sınıfının yalnızca "ışık açma isteğini lambaya iletmekle" sorumlu olması; buton dizilerini yönetme işini `RemoteControl`'a, lambanın fiziksel durumunu ise `Light` sınıfına bırakması.
+
+---
+
+### 2. Composition (Bileşim - HAS-A) vs. Inheritance (Kalıtım - IS-A)
+
+* **Inheritance (IS-A İlişkisi):**
+  * *Tanım:* Kod tekrarını önlemek ve tip hiyerarşisi kurmak için bir sınıfın başka bir sınıfı miras alması (`extends`). Sıkı bir bağ yaratır, çalışma anında değiştirilemez.
+  * *Kod Eşleşmesi:* 
+    * `NYPizzaStore extends PizzaStore` $\rightarrow$ "New York dükkanı bir pizza dükkanıdır."
+    * `MilkDecorator extends BeverageDecorator` $\rightarrow$ "Süt dekoratörü bir içecek dekoratörüdür."
+* **Composition (HAS-A İlişkisi):**
+  * *Tanım:* Bir sınıfın işini yapabilmek için başka bir sınıfı bünyesinde bir değişken (field) olarak barındırması.
+  * *Kod Eşleşmesi:* 
+    * `ShoppingCart` içinde `PaymentStrategy paymentStrategy;` tutulması.
+    * `LightOnCommand` içinde `Light light;` referansı barındırılması.
+* **Favor Composition over Inheritance (Altın İlke):** 
+  * Sistemleri kalıtımla şişirmek (sınıf patlaması) yerine nesneleri birbirine referans vererek birleştirmeyi tercih ettik. Decorator deseninde sütlü, karamelli, fındıklı onlarca alt sınıf açmak yerine iç içe sarmalamayı (Composition) seçtik.
+
+---
+
+### 3. Polymorphism (Çok Biçimlilik) & Dynamic Binding
+
+* **Polymorphism (Çok Biçimlilik):**
+  * *Tanım:* Ortak bir arayüzü veya üst sınıfı uygulayan farklı nesnelerin, aynı metot çağrısına kendilerine has farklı davranışlar sergilemesi.
+  * *Kod Eşleşmesi:* 
+    * `Transport t = TransportFactory.createTransport("ROAD"); t.deliver();` çağrıldığında Kamyonun; `"SEA"` istendiğinde ise Geminin `deliver()` metodunun devreye girmesi.
+    * `onCommands[slot].execute()` dendiğinde duruma göre ışığın açılması veya garaj kapısının kalkması.
+* **Dynamic Binding (Çalışma Anı Bağlama):**
+  * Java derleyicisi `strategy.pay(amount)` kodunu derlerken hangi `pay` metodunun çalışacağını bilmez. Program çalışırken (`runtime`) o referans hangi nesneyi işaret ediyorsa (`CreditCardPayment` mı yoksa `PayPalPayment` mı) ilgili metot dinamik olarak seçilir.
+
+---
+
+### 4. Abstraction (Soyutlama) & Information Hiding (Bilgi Gizleme)
+
+* **Abstraction:**
+  * *Tanım:* Karmaşık detayları kullanıcıdan gizleyip yalnızca gerekli işlev sözleşmesini sunmak.
+  * *Kod Eşleşmesi:* `Command` arayüzünün sadece `execute()` ve `undo()` sunması; arka planda hangi motorun çalıştığı veya hangi pinlerin tetiklendiği bilgisini gizlemesi.
+* **Encapsulation & Private Constructor:**
+  * *Tanım:* Nesnenin iç durumunu korumak ve izinsiz üretimi kısıtlamak.
+  * *Kod Eşleşmesi:* `DatabaseConnection` sınıfında `private DatabaseConnection()` kullanarak dış dünyadan kontrolsüz `new` yapılmasını engellemek, erişimi `getInstance()` kapısıyla denetim altına almak.
+
+---
+
+### 5. Delegation (Yetki Devri) & Recursive Composition
+
+* **Delegation:**
+  * *Tanım:* Bir nesnenin kendisine gelen isteği doğrudan kendisi yapmak yerine, bünyesinde tuttuğu uzman nesneye aktarması.
+  * *Kod Eşleşmesi:* `RemoteControl` sınıfının `onButtonWasPushed(slot)` dendiğinde işi `onCommands[slot].execute()` diyerek komut nesnesine devretmesi.
+* **Recursive Composition (Özyinelemeli Sarmalama / Matruşka Mantığı):**
+  * *Tanım:* Bir nesnenin hem bir arayüzü uygulaması hem de aynı arayüz tipinde başka bir nesneyi kendi içinde saklayarak zincir oluşturması.
+  * *Kod Eşleşmesi:* `MilkDecorator`'ın hem `Beverage` olması hem de içinde başka bir `Beverage` tutması:
+    ```java
+    coffee = new MilkDecorator(new Espresso());
+    // getCost() çağrıldığında önce içteki Espresso'ya sorar, ardından kendi farkını ekler.
+    ```
+
+---
+
+### 6. SOLID İlkeleri Eşleşmesi
+
+| İlke | Açılımı | Projedeki Somut Karşılığı |
+| :--- | :--- | :--- |
+| **SRP** (Single Responsibility) | Tek Sorumluluk İlkesi | `PizzaStore` sadece sipariş sürecini (`orderPizza`) yönetir, malzeme üretme sorumluluğunu `PizzaIngredientFactory`'ye devreder. |
+| **OCP** (Open/Closed Principle) | Gelişime Açık, Değişime Kapalı | Kumandaya yeni bir cihaz (ör. `AirConditioner`) eklemek için `RemoteControl` kodunu değiştirmeyiz; sadece yeni bir `AirConditionerCommand` yazarız. |
+| **DIP** (Dependency Inversion) | Bağımlılıkların Tersine Çevrilmesi | Yüksek seviyeli `PizzaStore` ve düşük seviyeli `NYStyleCheesePizza` doğrudan birbirine değil, soyut `Pizza` sınıfına bağımlıdır. |
